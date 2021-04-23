@@ -30,6 +30,8 @@ android {
         ndk {
             abiFilters.addAll(Config.Android.abiFilters)
         }
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildFeatures {
@@ -109,4 +111,13 @@ dependencies {
     implementation(Config.Libs.retrofit2Gson)
 
     debugImplementation(Config.Libs.leakCanary)
+
+    androidTestImplementation(Config.TestLibs.androidxRunner)
+    androidTestImplementation(Config.TestLibs.androidxJunit)
+
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
+    androidTestImplementation("com.android.support.test.uiautomator:uiautomator-v18:2.1.3")
+
+    androidTestImplementation("com.microsoft.appcenter:espresso-test-extension:1.4")
+
 }

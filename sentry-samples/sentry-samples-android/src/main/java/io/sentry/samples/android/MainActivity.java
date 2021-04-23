@@ -1,23 +1,35 @@
 package io.sentry.samples.android;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import io.sentry.Attachment;
 import io.sentry.ISpan;
 import io.sentry.Sentry;
 import io.sentry.SpanStatus;
 import io.sentry.UserFeedback;
+import io.sentry.android.core.SentryAndroid;
 import io.sentry.protocol.SentryId;
 import io.sentry.protocol.User;
 import io.sentry.samples.android.databinding.ActivityMainBinding;
+
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Locale;
@@ -50,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
         scope -> {
           scope.addAttachment(image);
         });
+
+    binding.buttonCopyFile.setOnClickListener( view -> {
+      boolean success = moveNativeCrashEnvelopeFile();
+      binding.textViewCopyFile.setText(success ? "SUCCESS" : "FAILED");
+    });
 
     binding.crashFromJava.setOnClickListener(
         view -> {
@@ -129,7 +146,11 @@ public class MainActivity extends AppCompatActivity {
           Sentry.setUser(user);
         });
 
-    binding.nativeCrash.setOnClickListener(view -> NativeSample.crash());
+    binding.nativeCrash.setOnClickListener(view -> {
+      Intent intent = new Intent(this, NativeCrashService.class);
+      intent.putExtra("FOOBAR", "FOO");
+      startService(intent);
+    });
 
     binding.nativeCapture.setOnClickListener(view -> NativeSample.message());
 
@@ -157,6 +178,44 @@ public class MainActivity extends AppCompatActivity {
         });
 
     setContentView(binding.getRoot());
+  }
+
+  boolean moveNativeCrashEnvelopeFile() {
+    File source = nativeCrashEnvelopeFileSource();
+    File target = nativeCrashEnvelopeFileTarget();
+    try {
+      copy(source, target);
+      return target.exists();
+    } catch (Exception exception) {
+      return false;
+    }
+  }
+
+  File nativeCrashEnvelopeFileTarget() {
+    return new File(this.getCacheDir(), "android-native-crash.envelope");
+  }
+
+  @Nullable
+  File nativeCrashEnvelopeFileSource() {
+    try {
+      File hiddenFolder = new File(this.getCacheDir(), "/sentry/.sentry-native");
+      return hiddenFolder.listFiles()[0];
+    } catch (Exception exception) {
+      return null;
+    }
+  }
+
+  private static void copy(File src, File dest) throws IOException {
+    try (InputStream is = new FileInputStream(src); OutputStream os = new FileOutputStream(dest)) {
+
+      // buffer size 1K
+      byte[] buf = new byte[1024];
+
+      int bytesRead;
+      while ((bytesRead = is.read(buf)) > 0) {
+        os.write(buf, 0, bytesRead);
+      }
+    }
   }
 
   @Override
