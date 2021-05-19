@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,10 @@ public final class SentryTransaction extends SentryBaseEvent {
   @SuppressWarnings("UnusedVariable")
   private @NotNull final String type = "transaction";
 
+  private @NotNull final Map<String, @NotNull MeasurementValue> measurements =
+      new ConcurrentHashMap<>();
+
+  @ApiStatus.Internal
   @SuppressWarnings("deprecation")
   public SentryTransaction(final @NotNull SentryTracer sentryTracer) {
     super(sentryTracer.getEventId());
@@ -84,5 +89,9 @@ public final class SentryTransaction extends SentryBaseEvent {
   public boolean isSampled() {
     final SpanContext trace = this.getContexts().getTrace();
     return trace != null && Boolean.TRUE.equals(trace.getSampled());
+  }
+
+  public @NotNull Map<String, @NotNull MeasurementValue> getMeasurements() {
+    return measurements;
   }
 }
