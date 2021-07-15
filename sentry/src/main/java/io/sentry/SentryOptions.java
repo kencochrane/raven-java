@@ -274,6 +274,12 @@ public class SentryOptions {
   private boolean enableShutdownHook = true;
 
   /**
+   * Controls the size of the request body to extract if any. No truncation is done by the SDK. If
+   * the request body is larger than the accepted size, nothing is sent.
+   */
+  private @NotNull RequestSize maxRequestBodySize = RequestSize.NONE;
+
+  /**
    * Creates {@link SentryOptions} from properties provided by a {@link PropertiesProvider}.
    *
    * @param propertiesProvider the properties provider
@@ -1418,6 +1424,14 @@ public class SentryOptions {
     this.maxCacheItems = maxCacheItems;
   }
 
+  public @NotNull RequestSize getMaxRequestBodySize() {
+    return maxRequestBodySize;
+  }
+
+  public void setMaxRequestBodySize(final @NotNull RequestSize maxRequestBodySize) {
+    this.maxRequestBodySize = maxRequestBodySize;
+  }
+
   /** The BeforeSend callback */
   public interface BeforeSendCallback {
 
@@ -1622,5 +1636,12 @@ public class SentryOptions {
     public void setPass(final @Nullable String pass) {
       this.pass = pass;
     }
+  }
+
+  public static enum RequestSize {
+    NONE,
+    SMALL,
+    MEDIUM,
+    ALWAYS,
   }
 }

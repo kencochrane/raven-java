@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Feat: Add request body extraction for Spring MVC integration (#1595)
+
 ## 5.1.0-beta.4
 
 * Update sentry-native to 0.4.11 (#1591)
